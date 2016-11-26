@@ -6,6 +6,6 @@
 
 - header of the provided csv files:
 ```
-Identifier|InChI|ExactMass|MolecularFormula|InChIKey1|InChIKey2|SMILES|Name|InChIKey3
+identifier|inchi|monoisotopicmass|molecularformula|inchikey1|inchikey2|inchikey3|smiles|name
 ```
 - columns need to be tab separated
