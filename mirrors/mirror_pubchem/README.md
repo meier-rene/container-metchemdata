@@ -1,0 +1,4 @@
+- provide gzipped SDF files here from ftp://ftp.ncbi.nlm.nih.gov/pubchem/Compound/CURRENT-Full/SDF/
+- e.g. Compound_000000001_000025000.sdf.gz
+- once added to the metchem container keep the filenames as they are
+- just update the content and add files with higher ID ranges
