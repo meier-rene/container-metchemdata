@@ -43,8 +43,7 @@ check_database_user () {
 # initial run needed to do once
 # !!! deletes all tables in the database first !!!
 init_database_from_github () {
- /usr/bin/git clone -b wo_pgchem https://www.github.com/ipb-halle/metchem
- /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < metchem/schema/MetChemSchema.sql
- /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < metchem/schema/MetChemIndex.sql
+ /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < /schema/MetChemSchema.sql
+ /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < /schema/MetChemIndex.sql
  check_database_user
 }
