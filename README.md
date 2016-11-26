@@ -22,12 +22,27 @@ POSTGRES_USER='database username in the metchem container'
 POSTGRES_PASSWORD='database user password in the metchem container'
 PGDATA='path of database repository within the metchem container'
 POSTGRES_DB='name of database to add data to'
-POSTGRES_IP=
+POSTGRES_IP='IP address of metchem container'
 POSTGRES_PORT=5432
-EXEC=
+EXEC='on or several of INIT,PUBCHEM,KEGG,CHEBI'
 KEGG_MIRROR=kegg_mirror
 PUBCHEM_MIRROR=pubchem_mirror
 CHEBI_MIRROR=chebi_mirror
-LOG_FOLDER=
+LOG_FOLDER='log folder within container'
+MIRROR_ROOT='define root folder of mirrors'
+```
+- EXEC defines which operation is performed in the container
+```bash
+INIT - creates schema in the database
+PUBCHEM - performes PubChem update/insert
+KEGG - performes PubChem update/insert
+CHEBI - performes PubChem update/insert
 ```
 
+#### Run
+
+- start the MetChem container first
+- run 
+```bash
+docker run --name dbfiller -v $MIRROR_ROOT:/data/:ro -v $LOG_FOLDER:$LOG_FOLDER --env-file env-file.txt -d container-dbfiller
+```
