@@ -44,5 +44,5 @@ CHEBI - performes PubChem update/insert
 - start the MetChem container first
 - run 
 ```bash
-docker run --name dbfiller -v $MIRROR_ROOT:/data/:ro -v $LOG_FOLDER:$LOG_FOLDER --env-file env-file.txt -d container-dbfiller
+docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro -v $LOG_FOLDER:$LOG_FOLDER --env-file env-file.txt -d container-metchemdata
 ```
