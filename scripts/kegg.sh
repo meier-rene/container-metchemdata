@@ -75,7 +75,7 @@ update_kegg () {
  fi
  # loop to check each data file
  unset IFS
- for i in $(ls /data/${KEGG_MIRROR})
+ for i in $(ls /data/${KEGG_MIRROR} | grep -e "gz$")
  do
   echo "file $i"
   # check time stamp of file and database 
