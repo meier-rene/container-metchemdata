@@ -75,7 +75,7 @@ update_chebi () {
  fi
  # loop to check each data file
  unset IFS
- for i in $(ls /data/${CHEBI_MIRROR})
+ for i in $(ls /data/${CHEBI_MIRROR} | grep -e "gz$")
  do
   echo "file $i"
   # check time stamp of file and database 
