@@ -4,10 +4,10 @@
 # includes
 ################
 
-source functions.sh
-source pubchem.sh
-source kegg.sh
-source chebi.sh
+source /scripts/functions.sh
+source /scripts/pubchem.sh
+source /scripts/kegg.sh
+source /scripts/chebi.sh
 
 if [ "$(check_database_exists)" -eq "0" ]
 then
