@@ -124,7 +124,7 @@ update_pubchem () {
     rm /tmp/${filename}.insert_query
   fi
   # delete non reference entries
-  delete_chebi_entries $filename $library_id
+  delete_pubchem_entries $filename $library_id
  done
  # update library modification date
  /usr/bin/psql -c "update library set last_updated='$mostcurrent' where library_id='$library_id';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
