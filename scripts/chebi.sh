@@ -44,7 +44,7 @@ delete_chebi_entries () {
  if [ -e /tmp/${filename}.delete_query ] 
  then
    # execute query file onto postgres server
-   /usr/bin/psql -f /tmp/${filename}.delete_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
+   /usr/bin/psql -f /tmp/${filename}.delete_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null
    rm /tmp/${filename}.delete_query
  fi
 }
