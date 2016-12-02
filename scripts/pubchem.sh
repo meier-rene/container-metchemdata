@@ -76,7 +76,7 @@ update_pubchem () {
    exit 1       
  fi
  unset IFS
- for i in $(ls /data/${PUBCHEM_MIRROR})
+ for i in $(ls /data/${PUBCHEM_MIRROR} | grep -e "gz$")
  do
   echo "file $i"
   # check time stamp of file and database 
