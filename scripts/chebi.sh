@@ -117,7 +117,7 @@ update_chebi () {
   if [ -e /tmp/${filename}.insert_query ] 
   then
     # execute query file onto postgres server
-    /usr/bin/psql -f /tmp/${filename}.insert_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
+    /usr/bin/psql -f /tmp/${filename}.insert_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null
     rm /tmp/${filename}.insert_query
   fi
   # delete non reference entries
