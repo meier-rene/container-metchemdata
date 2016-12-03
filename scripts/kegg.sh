@@ -11,7 +11,7 @@ write_kegg_entry () {
  # read values from argument string
  IFS='|' read -a vals <<< "$line"
  inchikey="${vals[5]}-${vals[6]}"
- if [ "${vals[7]}" != "" ]; inchikey="${vals[5]}-${vals[6]}-${vals[7]}"; fi
+ if [ "${vals[7]}" != "" ]; then inchikey="${vals[5]}-${vals[6]}-${vals[7]}"; fi
  # insert kegg entry
  echo "WITH ins_compound AS (
      INSERT INTO compound(monoisotopic_mass, molecular_formula, smiles, inchi, inchi_key_1, inchi_key_2, inchi_key_3, inchi_key)
