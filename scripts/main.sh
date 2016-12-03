@@ -53,9 +53,9 @@ TO_FIND="INDEX"
 if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
 then
  check_log_folder create_index
- if [ -e $LOG_FOLDER/init/ ]
+ if [ -e $LOG_FOLDER/create_index/ ]
  then
-  create_index >> $LOG_FOLDER/init/output.log 2>> $LOG_FOLDER/init/output.err
+  create_index >> $LOG_FOLDER/create_index/output.log 2>> $LOG_FOLDER/create_index/output.err
  else
   create_index
  fi
