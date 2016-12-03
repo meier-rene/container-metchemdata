@@ -42,8 +42,12 @@ check_database_user () {
 # init database and create tables
 # initial run needed to do once
 # !!! deletes all tables in the database first !!!
-init_database_from_github () {
+init_database () {
  /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < /schema/MetChemSchema.sql
- /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < /schema/MetChemIndex.sql
  check_database_user
+}
+
+# create index on tables
+create_index () {
+ /usr/bin/psql -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB < /schema/MetChemIndex.sql
 }
