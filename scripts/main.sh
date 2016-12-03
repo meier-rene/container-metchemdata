@@ -38,9 +38,26 @@ then
  check_log_folder init
  if [ -e $LOG_FOLDER/init/ ]
  then
-  init_database_from_github >> $LOG_FOLDER/init/output.log 2>> $LOG_FOLDER/init/output.err
+  init_database >> $LOG_FOLDER/init/output.log 2>> $LOG_FOLDER/init/output.err
  else
-  init_database_from_github
+  init_database
+ fi
+fi
+
+################
+# create index on database tables
+################
+
+# check whether $EXEC contains INDEX and create index
+TO_FIND="INDEX"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder init
+ if [ -e $LOG_FOLDER/init/ ]
+ then
+  create_index >> $LOG_FOLDER/init/output.log 2>> $LOG_FOLDER/init/output.err
+ else
+  create_index
  fi
 fi
 
