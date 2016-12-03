@@ -24,7 +24,7 @@ PGDATA='path of database repository within the metchem container'
 POSTGRES_DB='name of database to add data to'
 POSTGRES_IP='IP address of metchem container'
 POSTGRES_PORT=5432
-EXEC='on or several of INIT,PUBCHEM,KEGG,CHEBI'
+EXEC='on or several of INIT,INDEX,PUBCHEM,KEGG,CHEBI'
 KEGG_MIRROR=kegg_mirror
 PUBCHEM_MIRROR=pubchem_mirror
 CHEBI_MIRROR=chebi_mirror
@@ -34,6 +34,7 @@ MIRROR_ROOT='define root folder of mirrors'
 - EXEC defines which operation is performed in the container
 ```bash
 INIT - creates schema in the database
+INDEX - creates index on database tables
 PUBCHEM - performes PubChem update/insert
 KEGG - performes PubChem update/insert
 CHEBI - performes PubChem update/insert
