@@ -15,7 +15,7 @@ write_pubchem_entry () {
  # insert pubchem entry
  echo "WITH ins_compound AS (
      INSERT INTO compound(monoisotopic_mass, molecular_formula, smiles, inchi, inchi_key_1, inchi_key_2, inchi_key_3, inchi_key)
-     VALUES ('${vals[1]}', '${vals[2]}', '${vals[3]}', '${vals[4]}', '${vals[5]}', '${vals[6]}', '${vals[7]}', '${inchi_key}') on conflict (inchi_key_1,inchi_key_2,inchi_key_3) do update set monoisotopic_mass='${vals[1]}', molecular_formula='${vals[2]}', smiles='${vals[3]}', inchi='${vals[4]}', inchi_key_1='${vals[5]}', inchi_key_2='${vals[6]}', inchi_key_3='${vals[7]}', inchi_key='${inchi_key}'
+     VALUES ('${vals[1]}', '${vals[2]}', '${vals[3]}', '${vals[4]}', '${vals[5]}', '${vals[6]}', '${vals[7]}', '${inchi_key}') on conflict (inchi_key) do update set monoisotopic_mass='${vals[1]}', molecular_formula='${vals[2]}', smiles='${vals[3]}', inchi='${vals[4]}', inchi_key_1='${vals[5]}', inchi_key_2='${vals[6]}', inchi_key_3='${vals[7]}', inchi_key='${inchi_key}'
       RETURNING compound_id
     )
  , ins_substance AS (
