@@ -43,6 +43,7 @@ delete_pubchem_entries () {
  do
    echo "delete from substance where accession='${line}' and library_id='${library_id}';" >> /tmp/${filename}.delete_query
  done < /tmp/${filename}.delete
+ rm /tmp/${filename}.delete
  if [ -e /tmp/${filename}.delete_query ] 
  then
    # execute query file onto postgres server
@@ -118,6 +119,8 @@ update_pubchem () {
    # writes single insert command to query file
    write_pubchem_entry "$line" "$library_id" "/tmp/${filename}.insert_query"
   done < /tmp/${filename}.sql
+  rm /tmp/${filename}.sql
+  rm /tmp/${filename}.csv
   # check if insert query file was generated
   if [ -e /tmp/${filename}.insert_query ] 
   then
