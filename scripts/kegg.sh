@@ -34,6 +34,11 @@ write_kegg_entry () {
 delete_kegg_entries () {
  filename=$1
  library_id=$2
+ if [ ! -e /tmp/${filename}.sql ]
+ then
+  echo "Error in delete_kegg_entries(): /tmp/${filename}.sql not found. Nothing to delete."
+  return 1
+ fi
  # get accession ranges from filename
  IFS=' ' read -a ranges <<< "$(echo $filename | sed "s/.*_C0*\([0-9]*\)_C0*\([0-9]*\)/\1 \2/")"
  # get accessions not included anymore
@@ -116,8 +121,6 @@ update_kegg () {
    # writes single insert command to query file
    write_kegg_entry "$line" "$library_id" "/tmp/${filename}.insert_query"
   done < /tmp/${filename}.sql
-  rm /tmp/${filename}.sql
-  rm /tmp/${filename}.csv
   # check if insert query file was generated
   if [ -e /tmp/${filename}.insert_query ] 
   then
@@ -127,6 +130,8 @@ update_kegg () {
   fi
   # delete non reference entries
   delete_kegg_entries $filename $library_id
+  rm /tmp/${filename}.sql
+  rm /tmp/${filename}.csv
  done
  # update library modification date
  /usr/bin/psql -c "update library set last_updated='$mostcurrent' where library_id='$library_id';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
