@@ -34,6 +34,11 @@ write_pubchem_entry () {
 delete_pubchem_entries () {
  filename=$1
  library_id=$2
+ if [ ! -e /tmp/${filename}.sql ]
+ then
+  echo "Error in delete_pubchem_entries(): /tmp/${filename}.sql not found. Nothing to delete."
+  return 1
+ fi
  # get accession ranges from filename
  IFS=' ' read -a ranges <<< "$(echo $filename | sed "s/.*_0*\([0-9]*\)_0*\([0-9]*\)/\1 \2/")"
  # get accessions not included anymore
@@ -119,8 +124,6 @@ update_pubchem () {
    # writes single insert command to query file
    write_pubchem_entry "$line" "$library_id" "/tmp/${filename}.insert_query"
   done < /tmp/${filename}.sql
-  rm /tmp/${filename}.sql
-  rm /tmp/${filename}.csv
   # check if insert query file was generated
   if [ -e /tmp/${filename}.insert_query ] 
   then
@@ -131,6 +134,8 @@ update_pubchem () {
   # delete non reference entries
   delete_pubchem_entries $filename $library_id
  done
+ rm /tmp/${filename}.sql
+ rm /tmp/${filename}.csv
  # update library modification date
  /usr/bin/psql -c "update library set last_updated='$mostcurrent' where library_id='$library_id';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
 }
