@@ -13,7 +13,7 @@ docker build -t container-metchemdata .
 
 - rename sample environment file
 ```bash
-mv env-file_sample.txt env-file.txt
+cp env-file_sample.txt env-file.txt
 ```
 
 - set needed variables within environment file
