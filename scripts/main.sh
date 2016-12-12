@@ -72,9 +72,9 @@ then
  check_log_folder pubchem
  if [ -e $LOG_FOLDER/pubchem/ ]
  then
-  update_pubchem >> $LOG_FOLDER/pubchem/output.log 2>> $LOG_FOLDER/pubchem/output.err
+  generate_pubchem_files >> $LOG_FOLDER/pubchem/output.log 2>> $LOG_FOLDER/pubchem/output.err
  else
-  update_pubchem
+  generate_pubchem_files
  fi
 fi
 
