@@ -15,13 +15,66 @@ write_pubchem_entry () {
  if [ "${vals[4]}" == "" ]; then return 1; fi
  if [ "${vals[5]}" == "" ]; then return 1; fi
  if [ "${vals[6]}" == "" ]; then return 1; fi
+ folder=$(echo ${vals[5]} | sed "s/\(..\)/\1\//g")
+ if [ ! -e $outfolder/compound/$folder ]; then mkdir -p $outfolder/compound/$folder; fi
  local inchikey="${vals[5]}-${vals[6]}"
  if [ "${vals[7]}" != "" ]; then inchikey="${vals[5]}-${vals[6]}-${vals[7]}"; fi
  # insert pubchem entry
- echo "${vals[1]}|${vals[2]}|${vals[3]}|${vals[4]}|${vals[5]}|${vals[6]}|${vals[7]}|${inchikey}" >> $outfolder/compound/${inchikey}
- echo "${vals[8]}" >> $outfolder/name/${inchikey}
- echo "${vals[0]}" >> $outfolder/substance/${inchikey}
+ echo "${vals[1]}|${vals[2]}|${vals[3]}|${vals[4]}|${vals[5]}|${vals[6]}|${vals[7]}|${inchikey}|${vals[8]}|${vals[0]}" >> $outfolder/compound/${folder}/${inchikey}
 }
+
+write_pubchem_entries () {
+ local file=$1
+ local outfolder=$2
+ local lastcompoundid=$3
+ local library_id=$4
+ local currentcompoundid=$lastcompoundid
+ # compound table
+ while read line
+ do
+  local line=$(echo $line | sed "s/'/''/g")
+  IFS='|' read -a vals <<< "$line"
+  if [ "${vals[1]}" == "" ]; then return 1; fi
+  if [ "${vals[2]}" == "" ]; then return 1; fi
+  if [ "${vals[3]}" == "" ]; then return 1; fi
+  if [ "${vals[4]}" == "" ]; then return 1; fi
+  if [ "${vals[5]}" == "" ]; then return 1; fi
+  if [ "${vals[6]}" == "" ]; then return 1; fi
+  currentcompoundid=$((currentcompoundid+1))
+  echo ${currentcompoundid}|${vals[1]}|${vals[2]}|${vals[3]}|${vals[4]}|${vals[5]}|${vals[6]}|${vals[7]}|${inchikey}
+ done < $file > $outfolder/compound.txt
+ # substance table
+ local currentcompoundid=$lastcompoundid
+ while read line
+ do
+  local line=$(echo $line | sed "s/'/''/g")
+  IFS='|' read -a vals <<< "$line"
+  if [ "${vals[1]}" == "" ]; then return 1; fi
+  if [ "${vals[2]}" == "" ]; then return 1; fi
+  if [ "${vals[3]}" == "" ]; then return 1; fi
+  if [ "${vals[4]}" == "" ]; then return 1; fi
+  if [ "${vals[5]}" == "" ]; then return 1; fi
+  if [ "${vals[6]}" == "" ]; then return 1; fi
+  currentcompoundid=$((currentcompoundid+1))
+  echo ${currentcompoundid}|$library_id|${currentcompoundid}|${vals[0]}
+ done < $file > $outfolder/substance.txt
+ # name table
+ local currentcompoundid=$lastcompoundid
+ while read line
+ do
+  local line=$(echo $line | sed "s/'/''/g")
+  IFS='|' read -a vals <<< "$line"
+  if [ "${vals[1]}" == "" ]; then return 1; fi
+  if [ "${vals[2]}" == "" ]; then return 1; fi
+  if [ "${vals[3]}" == "" ]; then return 1; fi
+  if [ "${vals[4]}" == "" ]; then return 1; fi
+  if [ "${vals[5]}" == "" ]; then return 1; fi
+  if [ "${vals[6]}" == "" ]; then return 1; fi
+  currentcompoundid=$((currentcompoundid+1))
+  echo ${currentcompoundid}|${vals[8]}
+ done < $file > $outfolder/name.txt
+}
+
 
 # deletes from substance table NOT from compound table
 delete_pubchem_entries () {
@@ -51,6 +104,7 @@ delete_pubchem_entries () {
 }
 
 generate_pubchem_files() {
+ echo "generate_pubchem_files"
  exists=$(/usr/bin/psql -c "select 1 from library where library_name='pubchem';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB)
  if [ ! "$exists" == 1 ]
  then 
@@ -58,14 +112,18 @@ generate_pubchem_files() {
    return 1
  fi
  library_id=$(/usr/bin/psql -c "SELECT library_id FROM library where library_name='pubchem';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB)
+ echo "library found -> $library_id"
  # check folders and clean
- if [ -e ${OUTPUT_FOLDER}/pubchem/name/ ]; then rm -rf ${OUTPUT_FOLDER}/pubchem/name; fi
+ echo "cleaning folders"
  if [ -e ${OUTPUT_FOLDER}/pubchem/compound/ ]; then rm -rf ${OUTPUT_FOLDER}/pubchem/compound; fi
- if [ -e ${OUTPUT_FOLDER}/pubchem/substance/ ]; then rm -rf ${OUTPUT_FOLDER}/pubchem/substance; fi
- mkdir -p ${OUTPUT_FOLDER}/pubchem/name/
  mkdir -p ${OUTPUT_FOLDER}/pubchem/compound/
- mkdir -p ${OUTPUT_FOLDER}/pubchem/substance/
- wget -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
+ echo "downloading conversion tool"
+ if [ ! -z ${PROXY+x} ]
+ then
+  wget -e use_proxy=yes -e http_proxy=$PROXY -q -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
+ else
+  wget -q -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
+ fi
  # loop to check each data file
  if [ ! -e /data/${PUBCHEM_MIRROR} ]
  then
@@ -80,16 +138,16 @@ generate_pubchem_files() {
   # unzip file
   gunzip -c -k /data/$PUBCHEM_MIRROR/$i > /tmp/${filename}.sdf
   # convert sdf to csv
-  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv
+  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true
   # write out values of specific columns
   paste -d"|" \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_COMPOUND_CID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_MONOISOTOPIC_WEIGHT$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_MOLECULAR_FORMULA$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_OPENEYE_CAN_SMILES$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_INCHI$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_INCHIKEY$"?i:n;next}n{print $n}' /tmp/${filename}.csv | sed "s/-/|/g") \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_OPENEYE_NAME$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_COMPOUND_CID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_MONOISOTOPIC_WEIGHT$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_MOLECULAR_FORMULA$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_OPENEYE_CAN_SMILES$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_INCHI$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_INCHIKEY$"?i:n;next}n{print $n}' /tmp/${filename}.csv | sed "s/-/|/g") \
+  <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_IUPAC_OPENEYE_NAME$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
   > /tmp/${filename}.sql
   # write all insert commands into one query file
   IFS=''
@@ -103,8 +161,6 @@ generate_pubchem_files() {
   rm /tmp/${filename}.sdf
  done
  if [ ! -e ${OUTPUT_FOLDER}/pubchem/compound ]; then return 1; fi
- if [ ! -e ${OUTPUT_FOLDER}/pubchem/name ]; then return 1; fi
- if [ ! -e ${OUTPUT_FOLDER}/pubchem/substance ]; then return 1; fi
  # write database files
  compound_id=1
  substance_id=1
@@ -113,15 +169,18 @@ generate_pubchem_files() {
  if [ -e ${OUTPUT_FOLDER}/pubchem/name.txt ]; then rm ${OUTPUT_FOLDER}/pubchem/name.txt; fi
  # write file to import
  unset IFS
- for i in $(ls ${OUTPUT_FOLDER}/pubchem/compound)
+ for i in $(find ${OUTPUT_FOLDER}/pubchem/compound -type f)
  do
   inserted=0
-  number_lines=$(wc -l ${OUTPUT_FOLDER}/pubchem/compound/$i | cut -d" " -f1)
+  key=$(echo $i | sed "s/.*\///")
+  folder=$(echo $key | sed "s/\(..\)/\1\//g")
+  number_lines=$(wc -l $i | cut -d" " -f1)
   for (( num=1; num<=$number_lines; num++ ))
   do
-    compound_line=$(sed -n "${num}p" ${OUTPUT_FOLDER}/pubchem/compound/$i)
-    name_line=$(sed -n "${num}p" ${OUTPUT_FOLDER}/pubchem/name/$i)
-    substance_line=$(sed -n "${num}p" ${OUTPUT_FOLDER}/pubchem/substance/$i)
+    line=$(sed -n "${num}p" ${OUTPUT_FOLDER}/pubchem/compound/${folder}/$key)
+    compound_line=$(echo $line | cut -d"|" -f1-8)
+    name_line=$(echo $line | cut -d"|" -f9)
+    substance_line=$(echo $line | cut -d"|" -f10)
     if [ "$inserted" -eq "0" ]
     then
       echo "${compound_id}|$compound_line" >> ${OUTPUT_FOLDER}/pubchem/compound.txt
@@ -137,7 +196,6 @@ generate_pubchem_files() {
   done
   compound_id=$((compound_id+1))
   # delete processed file
-  rm ${OUTPUT_FOLDER}/pubchem/compound/$i
  done
  # insert data into database
  echo "copy data into tables"
