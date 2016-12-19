@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS LIBRARY;
 
 CREATE TABLE COMPOUND
 (
-	COMPOUND_ID SERIAL NOT NULL,
+	COMPOUND_ID INTEGER NOT NULL,
 	MONOISOTOPIC_MASS DECIMAL NOT NULL,
 	MOLECULAR_FORMULA VARCHAR NOT NULL,
 	SMILES VARCHAR NOT NULL,
@@ -23,12 +23,9 @@ CREATE TABLE COMPOUND
 	INCHI_KEY VARCHAR(27) NOT NULL
 ) WITHOUT OIDS;
 
-ALTER SEQUENCE COMPOUND_COMPOUND_ID_SEQ INCREMENT 1 MINVALUE 0;
-
-
 CREATE TABLE LIBRARY
 (
-	LIBRARY_ID SERIAL NOT NULL,
+	LIBRARY_ID INTEGER NOT NULL,
 	LIBRARY_NAME VARCHAR,
 	LAST_UPDATED DATE,
 	LIBRARY_LINK VARCHAR
@@ -44,12 +41,10 @@ CREATE TABLE NAME
 
 CREATE TABLE SUBSTANCE
 (
-	SUBSTANCE_ID SERIAL NOT NULL,
+	SUBSTANCE_ID INTEGER NOT NULL,
 	LIBRARY_ID INTEGER NOT NULL,
 	COMPOUND_ID INTEGER NOT NULL,
-	ACCESSION VARCHAR,
-	PRIMARY KEY (SUBSTANCE_ID),
-	UNIQUE (ACCESSION)
+	ACCESSION VARCHAR
 ) WITHOUT OIDS;
 
 /* Comments */
@@ -59,6 +54,6 @@ COMMENT ON COLUMN COMPOUND.INCHI_KEY_2 IS 'Second part';
 COMMENT ON COLUMN COMPOUND.INCHI_KEY_3 IS 'The last part of the InChI key.';
 
 /* Insert standard database which are imported */
-insert into library(library_name,last_updated,library_link) values ('kegg',date('1970-01-01'),'http://www.kegg.jp');
-insert into library(library_name,last_updated,library_link) values ('pubchem',date('1970-01-01'),'https://pubchem.ncbi.nlm.nih.gov');
-insert into library(library_name,last_updated,library_link) values ('chebi',date('1970-01-01'),'https://www.ebi.ac.uk/chebi');
+insert into library(library_name,library_id,last_updated,library_link) values ('kegg','1',date('1970-01-01'),'http://www.kegg.jp');
+insert into library(library_name,library_id,last_updated,library_link) values ('pubchem','2',date('1970-01-01'),'https://pubchem.ncbi.nlm.nih.gov');
+insert into library(library_name,library_id,last_updated,library_link) values ('chebi','3',date('1970-01-01'),'https://www.ebi.ac.uk/chebi');
