@@ -37,7 +37,7 @@ write_pubchem_entries () {
  paste -d"|" <(seq $currentcompoundid 1 $(expr $numlines + $currentcompoundid - 1)) <(echo $(yes $library_id | head -n${numlines}) | tr ' ' '\n') <(seq $currentcompoundid 1 $(expr $numlines + $currentcompoundid - 1)) <(cut -d"|" -f1 $file) | /usr/bin/psql -c "\COPY substance FROM STDIN ( FORMAT CSV, DELIMITER('|') );" -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
 
  # name table
- paste -d"|" <(cut -d"|" -f9 $file) <(seq $currentcompoundid 1 $(expr $numlines + $currentcompoundid - 1)) | /usr/bin/psql -c "\COPY name FROM STDIN ( FORMAT CSV, DELIMITER('|') );" -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
+ paste -d"|" <(cut -d"|" -f9 $file | sed "s/\"//g" | sed "s/'/''/g") <(seq $currentcompoundid 1 $(expr $numlines + $currentcompoundid - 1)) | /usr/bin/psql -c "\COPY name FROM STDIN ( FORMAT CSV, DELIMITER('|') );" -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
 }
 
 
@@ -80,11 +80,6 @@ generate_pubchem_files() {
  echo "library found -> $library_id"
  # check folders and clean
  echo "cleaning folders"
- if [ -e ${OUTPUT_FOLDER}/pubchem/ ]
- then 
-  rm -rf ${OUTPUT_FOLDER}/pubchem/*
- fi
- mkdir -p ${OUTPUT_FOLDER}/pubchem/
  echo "downloading conversion tool"
  if [ ! -z ${PROXY+x} ]
  then
