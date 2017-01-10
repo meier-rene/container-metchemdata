@@ -53,7 +53,3 @@ COMMENT ON COLUMN COMPOUND.INCHI_KEY_1 IS 'First part of the InChi key (skeleton
 COMMENT ON COLUMN COMPOUND.INCHI_KEY_2 IS 'Second part';
 COMMENT ON COLUMN COMPOUND.INCHI_KEY_3 IS 'The last part of the InChI key.';
 
-/* Insert standard database which are imported */
-insert into library(library_name,library_id,last_updated,library_link) values ('kegg','1',date('1970-01-01'),'http://www.kegg.jp');
-insert into library(library_name,library_id,last_updated,library_link) values ('pubchem','2',date('1970-01-01'),'https://pubchem.ncbi.nlm.nih.gov');
-insert into library(library_name,library_id,last_updated,library_link) values ('chebi','3',date('1970-01-01'),'https://www.ebi.ac.uk/chebi');

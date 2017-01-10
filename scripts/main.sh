@@ -8,12 +8,15 @@ source /scripts/functions.sh
 source /scripts/pubchem.sh
 source /scripts/kegg.sh
 source /scripts/chebi.sh
+source /scripts/lipidmaps.sh
 
 if [ "$(check_database_exists)" -eq "0" ]
 then
  echo "database $POSTGRES_DB not found"
  exit 1
 fi
+
+wait_for_database
 
 ##
 # create table functions
@@ -42,6 +45,98 @@ then
  else
   init_database
  fi
+ echo "database initialised"
+fi
+
+################
+# fill data pubchem
+################
+
+# check whether $EXEC contains PUBCHEM and update/create entries
+TO_FIND="PUBCHEM"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder pubchem
+ if [ -e $LOG_FOLDER/pubchem/ ]
+ then
+  insert_pubchem >> $LOG_FOLDER/pubchem/output.log 2>> $LOG_FOLDER/pubchem/output.err
+ else
+  insert_pubchem
+ fi
+ echo "pubchem inserted"
+fi
+
+################
+# fill data kegg
+################
+
+# check whether $EXEC contains KEGG and update/create entries
+TO_FIND="KEGG"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder kegg
+ if [ -e $LOG_FOLDER/kegg/ ]
+ then
+  insert_kegg >> $LOG_FOLDER/kegg/output.log 2>> $LOG_FOLDER/kegg/output.err
+ else
+  insert_kegg
+ fi
+ echo "kegg inserted"
+fi
+
+################
+# fill data lipidmaps
+################
+
+# check whether $EXEC contains LIPIDMAPS and update/create entries
+TO_FIND="LIPIDMAPS"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder lipidmaps
+ if [ -e $LOG_FOLDER/lipidmaps/ ]
+ then
+  insert_lipidmaps >> $LOG_FOLDER/lipidmaps/output.log 2>> $LOG_FOLDER/lipidmaps/output.err
+ else
+  insert_lipidmaps
+ fi
+ echo "lipidmaps inserted"
+fi
+
+################
+# fill data chebi
+################
+
+# check whether $EXEC contains CHEBI and update/create entries
+TO_FIND="CHEBI"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder chebi
+ if [ -e $LOG_FOLDER/chebi/ ]
+ then
+  insert_chebi >> $LOG_FOLDER/chebi/output.log 2>> $LOG_FOLDER/chebi/output.err
+ else
+  insert_chebi
+ fi
+ echo "chebi inserted"
+fi
+
+
+################
+# remove duplicates
+################
+
+# check whether $EXEC contains DUPLICATES and update/create entries
+TO_FIND="DUPLICATES"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder duplicates
+ if [ -e $LOG_FOLDER/duplicates/ ]
+ then
+  remove_duplicates >> $LOG_FOLDER/duplicates/output.log 2>> $LOG_FOLDER/duplicates/output.err
+ else
+  remove_duplicates
+ fi
+ echo "duplicates removed"
 fi
 
 ################
@@ -59,56 +154,5 @@ then
  else
   create_index
  fi
+ echo "index created"
 fi
-
-################
-# fill data pubchem
-################
-
-# check whether $EXEC contains PUBCHEM and update/create entries
-TO_FIND="PUBCHEM"
-if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
-then
- check_log_folder pubchem
- if [ -e $LOG_FOLDER/pubchem/ ]
- then
-  generate_pubchem_files >> $LOG_FOLDER/pubchem/output.log 2>> $LOG_FOLDER/pubchem/output.err
- else
-  generate_pubchem_files
- fi
-fi
-
-################
-# fill data kegg
-################
-
-# check whether $EXEC contains KEGG and update/create entries
-TO_FIND="KEGG"
-if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
-then
- check_log_folder kegg
- if [ -e $LOG_FOLDER/kegg/ ]
- then
-  update_kegg >> $LOG_FOLDER/kegg/output.log 2>> $LOG_FOLDER/kegg/output.err
- else
-  update_kegg
- fi
-fi
-
-################
-# fill data chebi
-################
-
-# check whether $EXEC contains CHEBI and update/create entries
-TO_FIND="CHEBI"
-if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
-then
- check_log_folder chebi
- if [ -e $LOG_FOLDER/chebi/ ]
- then
-  update_chebi >> $LOG_FOLDER/chebi/output.log 2>> $LOG_FOLDER/chebi/output.err
- else
-  update_chebi
- fi
-fi
-

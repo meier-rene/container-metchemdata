@@ -1,0 +1,39 @@
+version: "2"
+services:
+ metchem:
+  container_name: metchem
+  ports:
+   - "5432:5432"
+  volumes:
+   - /tmp/postgres:/tmp/postgres
+  image: "postgres:9.6"
+  environment: 
+   POSTGRES_USER: postgres
+   POSTGRES_PASSWORD: 'DATABASE_PASSWORD' # password used for postgres user
+   PGDATA: 'HOST_DATABASE_PATH' # where to store the data on the host
+   POSTGRES_DB: metchem 
+ 
+ metchemdata:
+  container_name: metchemdata
+  depends_on:
+   - metchem
+  build: .
+  image: metchemdata:1.0
+  links: 
+   - metchem
+  environment:
+   POSTGRES_USER: postgres
+   POSTGRES_PASSWORD: 'DATABASE_PASSWORD' # password used for postgres user
+   POSTGRES_DB: metchem
+   POSTGRES_IP: metchem
+   POSTGRES_PORT: 5432
+#   EXEC: INIT,CHEBI,LIPIDMAPS,KEGG,PUBCHEM,INDEX,DUPLICATES
+   EXEC: INIT,KEGG,LIPIDMAPS,CHEBI,INDEX,DUPLICATES
+   CHEBI_MIRROR: mirror_chebi
+   LIPIDMAPS_MIRROR: mirror_lipidmaps
+   KEGG_MIRROR: mirror_kegg
+   PUBCHEM_MIRROR: mirror_pubchem
+   LIPIDMAPS_MIRROR: mirror_lipidmaps
+   MIRROR_ROOT: 'PATH_TO_MIRRORS' # path to the local database mirrors
+  volumes:
+   - 'PATH_TO_MIRRORS':/data/:ro

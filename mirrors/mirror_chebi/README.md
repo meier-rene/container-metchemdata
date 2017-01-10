@@ -8,4 +8,4 @@
 ```
 identifier|inchi|monoisotopicmass|molecularformula|inchikey1|inchikey2|inchikey3|smiles|name
 ```
-- columns need to be tab separated
+- columns need to be pipe separated
