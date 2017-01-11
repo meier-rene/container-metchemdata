@@ -41,7 +41,7 @@ insert_pubchem() {
   # unzip file
   gunzip -c -k /data/$PUBCHEM_MIRROR/$i > /tmp/${filename}.sdf
   # convert sdf to csv
-  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true
+  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=PUBCHEM_EXACT_MASS,PUBCHEM_IUPAC_INCHI,PUBCHEM_IUPAC_INCHIKEY,PUBCHEM_MOLECULAR_FORMULA
   # write out values of specific columns
   paste -d"|" \
   <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_COMPOUND_CID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
@@ -99,11 +99,10 @@ update_pubchem() {
     mostcurrent=$filedate
   fi  
   filename=$(echo $i | sed 's/\.sdf\.gz//')
-  delete_pubchem_entries $filename $library_id
   # unzip file
   gunzip -c -k /data/$PUBCHEM_MIRROR/$i > /tmp/${filename}.sdf
   # convert sdf to csv
-  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true
+  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=PUBCHEM_EXACT_MASS,PUBCHEM_IUPAC_INCHI,PUBCHEM_IUPAC_INCHIKEY,PUBCHEM_MOLECULAR_FORMULA
   # write out values of specific columns
   paste -d"|" \
   <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"PUBCHEM_COMPOUND_CID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
