@@ -10,13 +10,13 @@ source /scripts/kegg.sh
 source /scripts/chebi.sh
 source /scripts/lipidmaps.sh
 
+wait_for_database
+
 if [ "$(check_database_exists)" -eq "0" ]
 then
  echo "database $POSTGRES_DB not found"
  exit 1
 fi
-
-wait_for_database
 
 ##
 # create table functions
@@ -120,25 +120,6 @@ then
  echo "chebi inserted"
 fi
 
-
-################
-# remove duplicates
-################
-
-# check whether $EXEC contains DUPLICATES and update/create entries
-TO_FIND="DUPLICATES"
-if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
-then
- check_log_folder duplicates
- if [ -e $LOG_FOLDER/duplicates/ ]
- then
-  remove_duplicates >> $LOG_FOLDER/duplicates/output.log 2>> $LOG_FOLDER/duplicates/output.err
- else
-  remove_duplicates
- fi
- echo "duplicates removed"
-fi
-
 ################
 # create index on database tables
 ################
@@ -155,4 +136,22 @@ then
   create_index
  fi
  echo "index created"
+fi
+         
+################
+# remove duplicates
+################
+
+# check whether $EXEC contains DUPLICATES and update/create entries
+TO_FIND="DUPLICATES"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder duplicates
+ if [ -e $LOG_FOLDER/duplicates/ ]
+ then
+  remove_duplicates >> $LOG_FOLDER/duplicates/output.log 2>> $LOG_FOLDER/duplicates/output.err
+ else
+  remove_duplicates
+ fi
+ echo "duplicates removed"
 fi

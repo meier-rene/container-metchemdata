@@ -34,7 +34,10 @@ check_database_user () {
    password=${METCHEMRO_PASSWORD}
   fi
   /usr/bin/psql -c "CREATE USER metchemro with UNENCRYPTED password '$password';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
-  /usr/bin/psql -c "GRANT CONNECT ON DATABASE $POSTGRES_DB to metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
+  /usr/bin/psql -c "GRANT SELECT ON compound TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
+  /usr/bin/psql -c "GRANT SELECT ON substance TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
+  /usr/bin/psql -c "GRANT SELECT ON name TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
+  /usr/bin/psql -c "GRANT SELECT ON library TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
  fi
 }
 
@@ -90,14 +93,13 @@ remove_duplicates () {
  echo "commit;" >> /tmp/remove_duplicates.query
  # run query
  /usr/bin/psql -f /tmp/remove_duplicates.query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null
+ rm /tmp/remove_duplicates.query
 }
 
 wait_for_database () {
- git clone https://github.com/vishnubob/wait-for-it.git
- bash wait-for-it/wait-for-it.sh ${POSTGRES_IP}:5432
- if [ "$?" -ne "0" ]
- then
-  echo "Database on host ${POSTGRES_IP}:5432 was not avaiable within 15 seconds"
-  exit 2
- fi
+ until /usr/bin/psql -h ${POSTGRES_IP} -U $POSTGRES_USER -d $POSTGRES_DB -c '\l' &> /dev/null; do
+  >&2 echo "Postgres is unavailable - sleeping"
+  sleep 1
+ done
+ >&2 echo "Postgres is up - executing command"
 }

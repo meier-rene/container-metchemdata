@@ -2,34 +2,6 @@
 # chebi filler script
 ######
 
-# deprecated from substance table NOT from compound table
-deprecated_chebi_entries () {
- filename=$1
- library_id=$2
- if [ ! -e /tmp/${filename}.sql ]
- then
-  echo "Error in depricated_chebi_entries(): /tmp/${filename}.sql not found. Nothing to delete."
-  return 1
- fi
- # get accession ranges from filename
- IFS=' ' read -a ranges <<< "$(echo $filename | sed "s/.*_\([0-9]*\)_\([0-9]*\)/\1 \2/")"
- # get accessions not included anymore
- # this is performed by comparison 
- comm -23 <(for (( c=${ranges[0]}; c<=${ranges[1]}; c++ )); do echo CHEBI:$c; done | sort) <(cut -d"|" -f1 /tmp/${filename}.sql | sort) > /tmp/${filename}.deprecated
- while read line
- do
-   echo "update substance set depricated='true' where accession='${line}' and library_id='${library_id}';" >> /tmp/${filename}.deprecated_query
- done < /tmp/${filename}.depricated
- rm /tmp/${filename}.deprecated
- if [ -e /tmp/${filename}.deprecated_query ] 
- then
-   # execute query file onto postgres server
-   /usr/bin/psql -f /tmp/${filename}.deprecated_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null
-   rm /tmp/${filename}.deprecated_query
- fi
-}
-
-
 # includes adding new entries and deleting non-existsing ones
 # deletes entries only from substance table as references from other databases might still
 # be present

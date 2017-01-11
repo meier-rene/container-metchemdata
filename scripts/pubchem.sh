@@ -2,33 +2,6 @@
 # pubchem filler script
 ######
 
-# deletes from substance table NOT from compound table
-delete_pubchem_entries () {
- filename=$1
- library_id=$2
- if [ ! -e /tmp/${filename}.sql ]
- then
-  echo "Error in delete_pubchem_entries(): /tmp/${filename}.sql not found. Nothing to delete."
-  return 1
- fi
- # get accession ranges from filename
- IFS=' ' read -a ranges <<< "$(echo $filename | sed "s/.*_0*\([0-9]*\)_0*\([0-9]*\)/\1 \2/")"
- # get accessions not included anymore
- # this is performed by comparison 
- comm -23 <(for (( c=${ranges[0]}; c<=${ranges[1]}; c++ )); do echo $c; done | sort) <(cut -d"|" -f1 /tmp/${filename}.sql | sort) > /tmp/${filename}.delete
- while read line
- do
-   echo "delete from substance where accession='${line}' and library_id='${library_id}';" >> /tmp/${filename}.delete_query
- done < /tmp/${filename}.delete
- rm /tmp/${filename}.delete
- if [ -e /tmp/${filename}.delete_query ] 
- then
-   # execute query file onto postgres server
-   /usr/bin/psql -f /tmp/${filename}.delete_query -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB > /dev/null
-   rm /tmp/${filename}.delete_query
- fi
-}
-
 insert_pubchem() {
  /usr/bin/psql -c "insert into library(library_name,library_id,last_updated,library_link) values ('pubchem','2',date('1970-01-01'),'https://pubchem.ncbi.nlm.nih.gov');" -h $POSTGRES_IP -U $POSTGRES_USER -d $POSTGRES_DB
  echo "generate_pubchem_files"
