@@ -25,7 +25,7 @@ metchemdata:
   POSTGRES_DB='name of database to add data to'
   POSTGRES_IP='IP address/host name of metchem container'
   METCHEMRO_PASSWORD='define passwor for read-only user metchemro used to query data after data import'
-  EXEC='on or several of INIT,INDEX,PUBCHEM,KEGG,CHEBI,LIPIDMAPS,INDEX,REMOVE_DUPLICATES'
+  EXEC='on or several of INIT,PUBCHEM,KEGG,CHEBI,LIPIDMAPS,INDEX,REMOVE_DUPLICATES'
   MIRROR_ROOT='define root folder of local file mirrors'
   KEGG_MIRROR=kegg_mirror # folder name of kegg located within the root folder
   PUBCHEM_MIRROR=pubchem_mirror # folder name of pubchem located within the root folder
@@ -40,13 +40,18 @@ metchemdata:
 ```bash
 INIT - creates schema in the database
 INDEX - creates index on database tables
+REMOVE_DUPLICATES - removes duplicates within compound table based on the complete InChIKey
 PUBCHEM - performes PubChem insert
 LIPIDMAPS - performes LipidMaps insert
 KEGG - performes KEGG insert
 CHEBI - performes ChEBI insert
 ```
+- a typical EXEC parameter set would be:
+```bash
+EXEC=INIT,PUBCHEM,KEGG,CHEBI,LIPIDMAPS,INDEX,REMOVE_DUPLICATES'
+```
 
-- provide the data within the mirror folders
+- provide the data within the mirror folders 
 
 #### Run
 
