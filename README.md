@@ -1,99 +1,57 @@
 # container-metchemdata
-Docker container to keep your MetChem database container up to date. Retrieve the MetCem database container first from https://github.com/c-ruttkies/container-metchem
-
-
-#### Install
-
-- build docker image
-```bash
-docker build -t container-metchemdata .
-```
+Docker container to generate your own local MetChem database. 
 
 #### Configure
 
-- rename sample environment file
+- you need to have docker-compose version installed (version 1.9.0 worked for me)
+- rename sample docker-compose file
 ```bash
-cp env-file_sample.txt env-file.txt
+cp docker-compose-sample.yml docker-compose.yml
 ```
 
-- set needed variables within environment file
+- set needed variables within docker-compose.yml file
 ```bash
-POSTGRES_USER='database username in the metchem container'
-POSTGRES_PASSWORD='database user password in the metchem container'
-PGDATA='path of database repository within the metchem container'
-POSTGRES_DB='name of database to add data to'
-POSTGRES_IP='IP address of metchem container'
-POSTGRES_PORT=5432
-EXEC='on or several of INIT,INDEX,PUBCHEM,KEGG,CHEBI'
-KEGG_MIRROR=kegg_mirror
-PUBCHEM_MIRROR=pubchem_mirror
-CHEBI_MIRROR=chebi_mirror
-LOG_FOLDER='log folder within container'
-MIRROR_ROOT='define root folder of mirrors'
+metchem:
+ environment:
+  POSTGRES_USER='database username in the metchem container'
+  POSTGRES_PASSWORD='database user password in the metchem container'
+  PGDATA='path of database repository within the metchem container'
+  POSTGRES_DB='name of database to add data to'
+
+metchemdata:
+ environment:
+  POSTGRES_USER='database username in the metchem container'
+  POSTGRES_PASSWORD='database user password in the metchem container'
+  POSTGRES_DB='name of database to add data to'
+  POSTGRES_IP='IP address/host name of metchem container'
+  METCHEMRO_PASSWORD='define passwor for read-only user metchemro used to query data after data import'
+  EXEC='on or several of INIT,INDEX,PUBCHEM,KEGG,CHEBI,LIPIDMAPS,INDEX,REMOVE_DUPLICATES'
+  MIRROR_ROOT='define root folder of local file mirrors'
+  KEGG_MIRROR=kegg_mirror # folder name of kegg located within the root folder
+  PUBCHEM_MIRROR=pubchem_mirror # folder name of pubchem located within the root folder
+  CHEBI_MIRROR=chebi_mirror # folder name of chebi located within the root folder
+  LIPIDMAPS_MIRROR=lipidmaps_mirror # folder name of lipidmaps located within the root folder
+ volumes:
+   - 'define root folder of local file mirrors':/data/:ro
+
 ```
+
 - EXEC defines which operation is performed in the container
 ```bash
 INIT - creates schema in the database
 INDEX - creates index on database tables
-PUBCHEM - performes PubChem update/insert
-KEGG - performes PubChem update/insert
-CHEBI - performes PubChem update/insert
+PUBCHEM - performes PubChem insert
+LIPIDMAPS - performes LipidMaps insert
+KEGG - performes KEGG insert
+CHEBI - performes ChEBI insert
 ```
-- setting LOG_FOLDER is optional and defines the location of the log files that will be generated
-- if LOG_FOLDER is not set, logs will go to stdout
+
+- provide the data within the mirror folders
 
 #### Run
 
-- start the MetChem container first
-- run (with log location defined)
+- start the containers by running docker-compose
 ```bash
-MIRROR_ROOT='define root folder of mirrors'
-docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro -v $LOG_FOLDER:$LOG_FOLDER --env-file env-file.txt -d container-metchemdata
-```
-
-- run (without log location defined)
-```bash
-MIRROR_ROOT='define root folder of mirrors'
-docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro --env-file env-file.txt -d container-metchemdata
-```
-
-#### Example Workflow
-##### PubChem
-- start container-metchem instance (https://github.com/c-ruttkies/container-metchem)
-- set environment variables
-```bash
-touch env-file.txt
-echo "POSTGRES_USER=postgres" >> env-file.txt
-echo "POSTGRES_PASSWORD=mypassword" >> env-file.txt # define valid postgres password here
-echo "PGDATA=/vol/postgres" >> env-file.txt 
-echo "POSTGRES_DB=metchem" >> env-file.txt 
-echo "POSTGRES_IP=172.17.0.3" >> env-file.txt # define valid IP address of container-metchem
-echo "POSTGRES_PORT=5432" >> env-file.txt 
-echo "EXEC=INIT" >> env-file.txt # first init database schema
-echo "PUBCHEM_MIRROR=pubchem_mirror" >> env-file.txt # pubchem folder within $MIRROT_ROOT
-echo "MIRROR_ROOT=/vol/data" >> env-file.txt # define the location of the data on the physical host
-```
-
-- run metchemdata container (initialises database schema)
-```bash
-MIRROR_ROOT=/vol/data # define the location of the data on the physical host
-docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro --env-file env-file.txt -d container-metchemdata
-docker rm metchemdata
-```
-
-- define next exec step (import of PubChem database) and run the container
-- this may take several days for the complete PubChem database
-```bash
-sed -i "s/^EXEC=.*/EXEC=PUBCHEM/" 
-MIRROR_ROOT=/vol/data # define the location of the data on the physical host
-docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro --env-file env-file.txt -d container-metchemdata
-docker rm metchemdata
-```
-
-- define next exec step (creating index on tables) and run the container
-```bash
-sed -i "s/^EXEC=.*/EXEC=INDEX/" 
-MIRROR_ROOT=/vol/data # define the location of the data on the physical host
-docker run --name metchemdata -v $MIRROR_ROOT:/data/:ro --env-file env-file.txt -d container-metchemdata
-docker rm metchemdata
+docker-compose build
+docker-compose up
 ```
