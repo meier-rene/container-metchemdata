@@ -10,8 +10,6 @@ insert_hmdb() {
  mostcurrentsecs=$dbdatesecs
  mostcurrent=""
  echo "library found -> $library_id"
- # check folders and clean
- echo "cleaning folders"
  echo "downloading conversion tool"
  if [ ! -z ${PROXY+x} ]
  then
@@ -26,7 +24,7 @@ insert_hmdb() {
    exit 1       
  fi
  unset IFS
- for i in $(ls /data/${HMDB_MIRROR} | grep -e "gz$")
+ for i in $(ls /data/${HMDB_MIRROR} | grep -e "tgz$")
  do
   echo "file ${i}"
   filedatesecs=$(date -r /data/${HMDB_MIRROR}/$i +%s)
@@ -36,11 +34,11 @@ insert_hmdb() {
     mostcurrentsecs=$filedatesecs
     mostcurrent=$filedate
   fi  
-  filename=$(echo $i | sed 's/\.sdf\.gz//')
+  filename=$(echo $i | sed 's/\.sdf\.tgz//')
   # unzip file
   gunzip -c -k /data/$HMDB_MIRROR/$i > /tmp/${filename}.sdf
   # convert sdf to csv
-  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=EXACT_MASS,INCHI_IDENTIFIER,INCHI_KEY,FORMULA
+  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=EXACT_MASS,INCHI_IDENTIFIER,INCHI_KEY,FORMULA,SMILES
   # write out values of specific columns
   paste -d"|" \
   <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"DATABASE_ID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
@@ -83,7 +81,7 @@ update_hmdb() {
  else
   wget -q -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
  fi
- for i in $(ls /data/${HMDB_MIRROR} | grep -e "gz$")
+ for i in $(ls /data/${HMDB_MIRROR} | grep -e "tgz$")
  do
   echo "file ${i}"
   filedatesecs=$(date -r /data/${HMDB_MIRROR}/$i +%s)
@@ -97,11 +95,11 @@ update_hmdb() {
     mostcurrentsecs=$filedatesecs
     mostcurrent=$filedate
   fi  
-  filename=$(echo $i | sed 's/\.sdf\.gz//')
+  filename=$(echo $i | sed 's/\.sdf\.tgz//')
   # unzip file
   gunzip -c -k /data/$HMDB_MIRROR/$i > /tmp/${filename}.sdf
   # convert sdf to csv
-  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=EXACT_MASS,INCHI_IDENTIFIER,INCHI_KEY,FORMULA
+  java -jar ~/ConvertSDF.jar sdf=/tmp/${filename}.sdf out=/tmp/ format=csv fast=true skipEntry=EXACT_MASS,INCHI_IDENTIFIER,INCHI_KEY,FORMULA,SMILES
   # write out values of specific columns
   paste -d"|" \
   <(awk -F '|' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"DATABASE_ID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
