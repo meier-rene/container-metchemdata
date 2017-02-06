@@ -10,6 +10,7 @@ source /scripts/kegg.sh
 source /scripts/kegg_derivatised.sh
 source /scripts/chebi.sh
 source /scripts/lipidmaps.sh
+source /scripts/hmdb.sh
 
 wait_for_database
 
@@ -65,6 +66,24 @@ then
   insert_pubchem
  fi
  echo "pubchem inserted"
+fi
+
+################
+# fill data hmdb
+################
+
+# check whether $EXEC contains HMDB and update/create entries
+TO_FIND="HMDB"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder hmdb
+ if [ -e $LOG_FOLDER/hmdb/ ]
+ then
+  insert_hmdb >> $LOG_FOLDER/hmdb/output.log 2>> $LOG_FOLDER/hmdb/output.err
+ else
+  insert_hmdb
+ fi
+ echo "hmdb inserted"
 fi
 
 ################
