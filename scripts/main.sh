@@ -7,6 +7,7 @@
 source /scripts/functions.sh
 source /scripts/pubchem.sh
 source /scripts/kegg.sh
+source /scripts/kegg_derivatised.sh
 source /scripts/chebi.sh
 source /scripts/lipidmaps.sh
 
@@ -64,6 +65,24 @@ then
   insert_pubchem
  fi
  echo "pubchem inserted"
+fi
+
+################
+# fill data kegg_derivatised
+################
+
+# check whether $EXEC contains KEGG_DERIVATISED and update/create entries
+TO_FIND="KEGG_DERIVATISED"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder kegg_derivatised
+ if [ -e $LOG_FOLDER/kegg_derivatised/ ]
+ then
+  insert_kegg_derivatised >> $LOG_FOLDER/kegg_derivatised/output.log 2>> $LOG_FOLDER/kegg_derivatised/output.err
+ else
+  insert_kegg_derivatised
+ fi
+ echo "kegg_derivatised inserted"
 fi
 
 ################
