@@ -3,7 +3,7 @@ create unique index compound_id on compound (compound_id);
 create index compound_mass on compound (monoisotopic_mass);
 create index compound_formula on compound (molecular_formula);                        
 create index compound_inchikey on compound (inchi_key);                        
-create index compound_inchikey on compound (inchi_key_1);            
+create index compound_inchikey1 on compound (inchi_key_1);            
 
 
 create unique index substance_id on substance (substance_id);
