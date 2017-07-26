@@ -13,9 +13,9 @@ insert_hmdb() {
  echo "downloading conversion tool"
  if [ ! -z ${PROXY+x} ]
  then
-  wget -e use_proxy=yes -e http_proxy=$PROXY -q -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
+  wget --no-check-certificate -e use_proxy=yes -e http_proxy=$PROXY -q -O ~/ConvertSDF.jar https://msbi.ipb-halle.de/~cruttkie/tools/ConvertSDF.jar
  else
-  wget -q -O ~/ConvertSDF.jar http://www.rforrocks.de/wp-content/uploads/2012/10/ConvertSDF.jar
+  wget --no-check-certificate -q -O ~/ConvertSDF.jar https://msbi.ipb-halle.de/~cruttkie/tools/ConvertSDF.jar
  fi
  # loop to check each data file
  if [ ! -e /data/${HMDB_MIRROR} ]
