@@ -33,7 +33,7 @@ check_database_user () {
   then
    password=${METCHEMRO_PASSWORD}
   fi
-  /usr/bin/psql -c "CREATE USER metchemro with UNENCRYPTED password '$password';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
+  /usr/bin/psql -c "CREATE USER metchemro with password '$password';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
   /usr/bin/psql -c "GRANT SELECT ON compound TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
   /usr/bin/psql -c "GRANT SELECT ON substance TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
   /usr/bin/psql -c "GRANT SELECT ON name TO metchemro;" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
