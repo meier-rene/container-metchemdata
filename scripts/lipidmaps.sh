@@ -11,9 +11,9 @@ insert_lipidmaps () {
  # check if database exists
  last_updated=$(/usr/bin/psql -c "SELECT last_updated FROM library where library_name='lipidmaps';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB)
  # get current modification date
- dbdatesecs=$(date -d $last_updated +%s)
+ dbdatesecs=$(date -d ${last_updated} +%s)
  mostcurrentsecs=$dbdatesecs
- mostcurrent=""
+# mostcurrent="" ## 
  library_id=$(/usr/bin/psql -c "SELECT library_id FROM library where library_name='lipidmaps';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB)
  if [ ! -e /data/${LIPIDMAPS_MIRROR} ]
  then
