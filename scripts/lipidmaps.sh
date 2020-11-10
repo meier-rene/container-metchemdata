@@ -35,24 +35,22 @@ insert_lipidmaps () {
   fi  
   # get filename
   filename=$(echo $i | sed 's/\.csv\.gz//')
-  # unzip file
-  gunzip -c -k /data/${LIPIDMAPS_MIRROR}/$i > /tmp/${filename}.csv
+  # unzip file and make compatible with input format  
+  gunzip -c -k /data/${LIPIDMAPS_MIRROR}/$i | sed -e 's#^\tLM\t#LM\t#' > /tmp/${filename}.csv
   # write out values of specific columns
   paste -d"|" \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"identifier$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"monoisotopicmass$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"molecularformula$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"smiles$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchi$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey1$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey2$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey3$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"name$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(paste -d"-" \
-    <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey1$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-    <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey2$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-    <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey3$"?i:n;next}n{print $n}' /tmp/${filename}.csv)) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"regno$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"exactmass$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"formula$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"smiles$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchi$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchi_key$"?i:n;next}n{print $n}' /tmp/${filename}.csv | tr '-' '|' ) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"regno$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchi_key$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"name$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  | grep -v '||' \
   > /tmp/${filename}.sql
+
   # write all insert commands into one query file
   write_entries "/tmp/${filename}.sql" "${library_id}" > /dev/null
   # remove files

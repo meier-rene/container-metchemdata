@@ -10,6 +10,5 @@ identifier|inchi|monoisotopicmass|molecularformula|inchikey1|inchikey2|inchikey3
 
 ```
 wget -O lipidmaps.csv https://www.lipidmaps.org/rest/compound/lm_id/LM/all/download
-sed -i -e 's/\t/|/g' lipidmaps.csv
 gzip lipidmaps.csv
 ```
