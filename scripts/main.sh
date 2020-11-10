@@ -10,6 +10,7 @@ source /scripts/kegg.sh
 source /scripts/kegg_derivatised.sh
 source /scripts/chebi.sh
 source /scripts/lipidmaps.sh
+source /scripts/swisslipids.sh
 source /scripts/hmdb.sh
 
 wait_for_database
@@ -157,6 +158,25 @@ then
  fi
  echo "chebi inserted"
 fi
+
+################
+# fill data swisslipids
+################
+
+# check whether $EXEC contains SWISSLIPIDS and update/create entries
+TO_FIND="SWISSLIPIDS"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder swisslipids
+ if [ -e $LOG_FOLDER/swisslipids/ ]
+ then
+  insert_swisslipids >> $LOG_FOLDER/swisslipids/output.log 2>> $LOG_FOLDER/swisslipids/output.err
+ else
+  insert_swisslipids
+ fi
+ echo "swisslipids inserted"
+fi
+
 
 ################
 # create index on database tables
