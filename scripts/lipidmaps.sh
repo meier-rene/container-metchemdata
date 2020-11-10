@@ -37,7 +37,9 @@ insert_lipidmaps () {
   filename=$(echo $i | sed 's/\.csv\.gz//')
   # unzip file and make compatible with input format  
   gunzip -c -k /data/${LIPIDMAPS_MIRROR}/$i | sed -e 's#^\tLM\t#LM\t#' > /tmp/${filename}.csv
+
   # write out values of specific columns
+  # Drop any records with missing values  
   paste -d"|" \
   <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"regno$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
   <(awk -F '[\t]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"exactmass$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
@@ -54,8 +56,8 @@ insert_lipidmaps () {
   # write all insert commands into one query file
   write_entries "/tmp/${filename}.sql" "${library_id}" > /dev/null
   # remove files
-#  rm /tmp/${filename}.sql
-#  rm /tmp/${filename}.csv
+  rm /tmp/${filename}.sql
+  rm /tmp/${filename}.csv
  done
  # update library modification date
  /usr/bin/psql -c "update library set last_updated='$mostcurrent' where library_id='$library_id';" -h $POSTGRES_IP -U $POSTGRES_USER -qtA -d $POSTGRES_DB
