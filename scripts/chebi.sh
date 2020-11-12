@@ -22,7 +22,7 @@ insert_chebi () {
  fi
  # loop to check each data file
  unset IFS
- for i in $(ls /data/${CHEBI_MIRROR} | grep -e "gz$")
+ for i in $(ls /data/${CHEBI_MIRROR} | grep -e ".sdf.gz$")
  do
   echo "file ${i}"
   # check time stamp of file and database 
@@ -34,21 +34,37 @@ insert_chebi () {
     mostcurrent=$filedate
   fi  
   # get filename
-  filename=$(echo $i | sed 's/\.csv\.gz//')
-  # unzip file
-  gunzip -c -k /data/${CHEBI_MIRROR}/$i > /tmp/${filename}.csv
+  filename=$(echo $i | sed 's/\.sdf\.gz//')
+  # unzip file, turn SDF into key-value
+
+  zcat /data/${CHEBI_MIRROR}/$i |\
+      grep -A 1 '^> <' |\
+      sed -e 's/^> <\(.*\)>$/\1/' |\
+      grep -v "^--$" |\
+      sed '$!N;s/\n/\t/' |\
+      egrep '(^ChEBI ID[[:space:]])|(^Mass[[:space:]])|(^Formulae[[:space:]])|(^SMILES[[:space:]])|(^InChI[[:space:]])|(^InChIKey[[:space:]])|(^ChEBI Name[[:space:]])' |\
+      sed -e 's/^ChEBI ID/\nChEBI ID/' > /tmp/${filename}.keys
+
+  echo "ChEBI ID|Mass|Formulae|SMILES|InChI|InChIKey|ChEBI Name" > /tmp/${filename}.csv
+  awk -v OFS='|' '
+    match($0, /\t/) {a[substr($0,1,RSTART-1)] = substr($0,RSTART+RLENGTH)}
+    /^$/ {print a["ChEBI ID"], a["Mass"], a["Formulae"], a["SMILES"], a["InChI"], a["InChIKey"], a["ChEBI Name"]; split("", a)}
+    END {print a["ChEBI ID"], a["Mass"], a["Formulae"], a["SMILES"], a["InChI"], a["InChIKey"], a["ChEBI Name"]}
+' /tmp/${filename}.keys >> /tmp/${filename}.csv
   # write out values of specific columns
+  # Input order: "ChEBI ID|Mass|Formulae|SMILES|InChI|InChIKey|ChEBI Name" 
   paste -d"|" \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"identifier$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"monoisotopicmass$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"molecularformula$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"smiles$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchi$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey1$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey2$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey3$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"name$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
-  <(paste -d"-" <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey1$"?i:n;next}n{print $n}' /tmp/${filename}.csv) <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey2$"?i:n;next}n{print $n}' /tmp/${filename}.csv) <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"inchikey3$"?i:n;next}n{print $n}' /tmp/${filename}.csv)) > /tmp/${filename}.sql
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"ChEBI ID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"Mass$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"Formulae$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"SMILES$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"InChI$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"InChIKey$"?i:n;next}n{print $n}' /tmp/${filename}.csv | tr '-' '|' ) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"ChEBI ID$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"InChIKey$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  <(awk -F '[|]' -v c="" 'NR==1{for(i=1;i<=NF;i++)n=$i~"ChEBI Name$"?i:n;next}n{print $n}' /tmp/${filename}.csv) \
+  | grep -v '||' > /tmp/${filename}.sql
+
   # write all insert commands into one query file
   write_entries "/tmp/${filename}.sql" "${library_id}" > /dev/null
   # remove files
