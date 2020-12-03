@@ -11,6 +11,7 @@ source /scripts/kegg_derivatised.sh
 source /scripts/chebi.sh
 source /scripts/lipidmaps.sh
 source /scripts/swisslipids.sh
+source /scripts/coconut.sh
 source /scripts/hmdb.sh
 
 wait_for_database
@@ -175,6 +176,24 @@ then
   insert_swisslipids
  fi
  echo "swisslipids inserted"
+fi
+
+################
+# fill data COCONUT
+################
+
+# check whether $EXEC contains COCONUT and update/create entries
+TO_FIND="COCONUT"
+if echo $EXEC | grep -q -e "^$TO_FIND,\|,$TO_FIND$\|,$TO_FIND,\|^$TO_FIND$"
+then
+ check_log_folder coconut
+ if [ -e $LOG_FOLDER/coconut/ ]
+ then
+  insert_coconut >> $LOG_FOLDER/coconut/output.log 2>> $LOG_FOLDER/coconut/output.err
+ else
+  insert_coconut
+ fi
+ echo "COCONUT inserted"
 fi
 
 
